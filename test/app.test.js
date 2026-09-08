@@ -16,5 +16,13 @@ describe("Web application", () => {
     expect(response.body).toEqual({
       status: "ok"
     });
+test("GET /status returns application status", async () => {
+  const response = await request(app).get("/status");
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body).toEqual({
+    application: "devops-case-study",
+    status: "running"
   });
+});
 });
