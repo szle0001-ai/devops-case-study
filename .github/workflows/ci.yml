@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - main
+      permissions:
+  contents: read
+  packages: write
 
 jobs:
   quality-check:
@@ -31,3 +34,23 @@ jobs:
 
       - name: Run automated tests
         run: npm test
+              - name: Build Docker image
+        run: docker build -t devops-case-study:${{ github.sha }}
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag Docker image for registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker tag devops-case-study:${{ github.sha }} ghcr.io/${{ github.repository_owner }}/devops-case-study:${{ github.sha }}
+
+      - name: Push Docker image to registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push ghcr.io/${{ github.repository_owner }}/devops-case-study:${{ github.sha }}
+
+        
